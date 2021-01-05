@@ -7,9 +7,11 @@ using System.Reflection;
 
 namespace launcher {
     public class Param {
+        public string[] Args { get; set; }
         public string Exe { get; set; }
         public string Updater { get; set; }
         public string Zhget { get; set; }
+        public string Launcher { get; set; }
         public string Text { get; set; }
         private string configPath;
         private string logPath;
@@ -17,6 +19,7 @@ namespace launcher {
         public string DocPort { get; set; }
         public Param(string[] args) {
             string[] param;
+            Args = args;
             string arg0 = args.Length > 0 ? args[0] : "";
             param = (arg0 + ";;;;").Split(';');
 
@@ -24,6 +27,7 @@ namespace launcher {
             Exe = Path.Combine(path, "ziphttpd.exe");
             Updater = Path.Combine(path, "updater.exe");
             Zhget = Path.Combine(path, "zhget.exe");
+            Launcher = Path.Combine(path, "launcher.exe");
 
             //            string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
@@ -94,7 +98,7 @@ namespace launcher {
             return running;
         }
         void update() {
-            var running = stop();
+            stop();
 
             // 更新プログラムのダウンロード
             Process zhget = new Process();
@@ -125,7 +129,15 @@ namespace launcher {
             zhget.Start();
             zhget.WaitForExit();
 
-            if (running) start();
+            // 自身を再起動
+            Process mine = new Process();
+            mine.StartInfo.FileName = param.Launcher;
+            mine.StartInfo.Arguments = String.Join(" ", param.Args);
+            mine.StartInfo.UseShellExecute = false;
+            mine.Start();
+            mine.WaitForExit();
+
+            Application.Exit();
         }
         void restart() {
             stop();
