@@ -8,6 +8,8 @@ using System.Reflection;
 namespace launcher {
     public class Param {
         public string Exe { get; set; }
+        public string Updater { get; set; }
+        public string Zhget { get; set; }
         public string Text { get; set; }
         private string configPath;
         private string logPath;
@@ -20,8 +22,10 @@ namespace launcher {
 
             string path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             Exe = Path.Combine(path, "ziphttpd.exe");
+            Updater = Path.Combine(path, "updater.exe");
+            Zhget = Path.Combine(path, "zhget.exe");
 
-//            string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            //            string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
             Text = param[0].Trim();
             if (Text == "") { Text = @"ZipHttpd"; }
@@ -51,6 +55,7 @@ namespace launcher {
             icon.Text = param.Text;
             icon.Icon = Resources.favicon;
             icon.ContextMenu = new ContextMenu(new MenuItem[] {
+                new MenuItem("Update", delegate { update(); } ),
                 new MenuItem("Show", delegate { show(); } ),
                 new MenuItem("Restart", delegate { restart(); } ),
                 new MenuItem("Exit", delegate { exit(); } ),
@@ -79,12 +84,48 @@ namespace launcher {
                 process.Start();
             }
         }
-        void stop() {
-            if (process != null) {
+        bool stop() {
+            var running = process != null;
+            if (running) {
                 process.StandardInput.WriteLine("quit");
                 process.WaitForExit();
                 process = null;
             }
+            return running;
+        }
+        void update() {
+            var running = stop();
+
+            // 更新プログラムのダウンロード
+            Process zhget = new Process();
+            zhget.StartInfo.FileName = param.Zhget;
+            zhget.StartInfo.Arguments = "-host ziphttpd.com -group windows";
+            zhget.StartInfo.UseShellExecute = false;
+            zhget.StartInfo.RedirectStandardInput = false;
+            zhget.StartInfo.CreateNoWindow = true;
+            zhget.Start();
+            zhget.WaitForExit();
+
+            // プログラムのアップデート
+            Process updater = new Process();
+            updater.StartInfo.FileName = param.Updater;
+            updater.StartInfo.UseShellExecute = false;
+            updater.StartInfo.RedirectStandardInput = false;
+            updater.StartInfo.CreateNoWindow = true;
+            updater.Start();
+            updater.WaitForExit();
+
+            // 更新ドキュメントのダウンロード
+            zhget = new Process();
+            zhget.StartInfo.FileName = param.Zhget;
+            zhget.StartInfo.Arguments = "";
+            zhget.StartInfo.UseShellExecute = false;
+            zhget.StartInfo.RedirectStandardInput = false;
+            zhget.StartInfo.CreateNoWindow = true;
+            zhget.Start();
+            zhget.WaitForExit();
+
+            if (running) start();
         }
         void restart() {
             stop();
