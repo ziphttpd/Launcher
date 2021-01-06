@@ -100,15 +100,6 @@ namespace launcher {
         void update() {
             stop();
 
-            // 更新プログラムのダウンロード
-            Process zhget = new Process();
-            zhget.StartInfo.FileName = param.Zhget;
-            zhget.StartInfo.Arguments = "-host ziphttpd.com -group windows";
-            zhget.StartInfo.UseShellExecute = false;
-            zhget.StartInfo.RedirectStandardInput = false;
-            zhget.StartInfo.CreateNoWindow = true;
-            zhget.Start();
-            zhget.WaitForExit();
 
             // プログラムのアップデート
             Process updater = new Process();
@@ -120,9 +111,8 @@ namespace launcher {
             updater.WaitForExit();
 
             // 更新ドキュメントのダウンロード
-            zhget = new Process();
+            Process zhget = new Process();
             zhget.StartInfo.FileName = param.Zhget;
-            zhget.StartInfo.Arguments = "";
             zhget.StartInfo.UseShellExecute = false;
             zhget.StartInfo.RedirectStandardInput = false;
             zhget.StartInfo.CreateNoWindow = true;
