@@ -125,7 +125,6 @@ namespace launcher {
             mine.StartInfo.Arguments = String.Join(" ", param.Args);
             mine.StartInfo.UseShellExecute = false;
             mine.Start();
-            mine.WaitForExit();
 
             Application.Exit();
         }
