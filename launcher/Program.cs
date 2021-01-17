@@ -176,12 +176,18 @@ namespace launcher {
             }
             System.Diagnostics.Process.Start("http://localhost:" + param.SelPort + "/");
         }
+        void stopselect() {
+            if (selprocess != null) {
+                selprocess.Kill();
+            }
+        }
         void restart() {
             stop();
             start();
         }
         void exit() {
             stop();
+            stopselect();
             Application.Exit();
         }
         void OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e) {
