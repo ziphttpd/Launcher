@@ -23,7 +23,7 @@ namespace launcher {
             string[] param;
             Args = args;
             string arg0 = args.Length > 0 ? args[0] : "";
-            param = (arg0 + ";;;;").Split(';');
+            param = (arg0 + ";;;;;").Split(';');
 
             string path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             Exe = Path.Combine(path, "ziphttpd.exe");
@@ -50,7 +50,7 @@ namespace launcher {
             if (DocPort == "") { DocPort = "58823"; }
 
             SelPort = Environment.ExpandEnvironmentVariables(param[5].Trim());
-            if (SelPort == "") { DocPort = "8822"; }
+            if (SelPort == "") { SelPort = "8822"; }
         }
         public string arguments() {
             return string.Format(@"-config {0} -log {1} -port {2} -docport {3}", configPath, logPath, Port, DocPort);
