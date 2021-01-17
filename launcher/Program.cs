@@ -12,11 +12,13 @@ namespace launcher {
         public string Updater { get; set; }
         public string Zhget { get; set; }
         public string Launcher { get; set; }
+        public string Selector { get; set; }
         public string Text { get; set; }
         private string configPath;
         private string logPath;
         public string Port { get; set; }
         public string DocPort { get; set; }
+        public string SelPort { get; set; }
         public Param(string[] args) {
             string[] param;
             Args = args;
@@ -28,6 +30,7 @@ namespace launcher {
             Updater = Path.Combine(path, "updater.exe");
             Zhget = Path.Combine(path, "zhget.exe");
             Launcher = Path.Combine(path, "launcher.exe");
+            Selector = Path.Combine(path, "selector.exe");
 
             //            string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
@@ -45,14 +48,21 @@ namespace launcher {
 
             DocPort = Environment.ExpandEnvironmentVariables(param[4].Trim());
             if (DocPort == "") { DocPort = "58823"; }
+
+            SelPort = Environment.ExpandEnvironmentVariables(param[5].Trim());
+            if (SelPort == "") { DocPort = "8822"; }
         }
         public string arguments() {
             return string.Format(@"-config {0} -log {1} -port {2} -docport {3}", configPath, logPath, Port, DocPort);
+        }
+        public string selarguments() {
+            return string.Format(@"-config {0} -port {1}", configPath, SelPort);
         }
     }
     public class nicon {
         NotifyIcon icon = new NotifyIcon();
         Process process;
+        Process selprocess;
         Param param;
         nicon(string[] args) {
             param = new Param(args);
@@ -60,6 +70,7 @@ namespace launcher {
             icon.Icon = Resources.favicon;
             icon.ContextMenu = new ContextMenu(new MenuItem[] {
                 new MenuItem("Update", delegate { update(); } ),
+                new MenuItem("Selector", delegate { select(); } ),
                 new MenuItem("Show", delegate { show(); } ),
                 new MenuItem("Restart", delegate { restart(); } ),
                 new MenuItem("Exit", delegate { exit(); } ),
@@ -100,6 +111,34 @@ namespace launcher {
         void update() {
             stop();
 
+            // ZipHttpd の更新プログラムのダウンロード
+            Process zhget = new Process();
+            zhget.StartInfo.FileName = param.Zhget;
+            zhget.StartInfo.Arguments = "-host ziphttpd.com -group windows";
+            zhget.StartInfo.UseShellExecute = false;
+            zhget.StartInfo.RedirectStandardInput = false;
+            zhget.StartInfo.CreateNoWindow = true;
+            zhget.Start();
+            zhget.WaitForExit();
+
+            // ZipHttpd v1 自体のドキュメントのダウンロード
+            zhget = new Process();
+            zhget.StartInfo.FileName = param.Zhget;
+            zhget.StartInfo.Arguments = "-host ziphttpd.com -group ziphttpd-V1";
+            zhget.StartInfo.UseShellExecute = false;
+            zhget.StartInfo.RedirectStandardInput = false;
+            zhget.StartInfo.CreateNoWindow = true;
+            zhget.Start();
+            zhget.WaitForExit();
+
+            // 更新ドキュメントのダウンロード
+            zhget = new Process();
+            zhget.StartInfo.FileName = param.Zhget;
+            zhget.StartInfo.UseShellExecute = false;
+            zhget.StartInfo.RedirectStandardInput = false;
+            zhget.StartInfo.CreateNoWindow = true;
+            zhget.Start();
+            zhget.WaitForExit();
 
             // プログラムのアップデート
             Process updater = new Process();
@@ -110,15 +149,6 @@ namespace launcher {
             updater.Start();
             updater.WaitForExit();
 
-            // 更新ドキュメントのダウンロード
-            Process zhget = new Process();
-            zhget.StartInfo.FileName = param.Zhget;
-            zhget.StartInfo.UseShellExecute = false;
-            zhget.StartInfo.RedirectStandardInput = false;
-            zhget.StartInfo.CreateNoWindow = true;
-            zhget.Start();
-            zhget.WaitForExit();
-
             // 自身を再起動
             Process mine = new Process();
             mine.StartInfo.FileName = param.Launcher;
@@ -127,6 +157,24 @@ namespace launcher {
             mine.Start();
 
             Application.Exit();
+        }
+        void select() {
+            if (selprocess == null) {
+                string nowExe = param.Selector + ".now";
+                try {
+                    File.Delete(nowExe);
+                    File.Copy(param.Selector, nowExe);
+                } catch (Exception) { /* noop */}
+                selprocess = new Process();
+                selprocess.StartInfo.FileName = nowExe;
+                selprocess.StartInfo.Arguments = param.selarguments();
+                selprocess.StartInfo.UseShellExecute = false;
+                selprocess.StartInfo.RedirectStandardInput = true;
+                selprocess.OutputDataReceived += OutputDataReceived;
+                selprocess.StartInfo.CreateNoWindow = true;
+                selprocess.Start();
+            }
+            System.Diagnostics.Process.Start("http://localhost:" + param.SelPort + "/");
         }
         void restart() {
             stop();
