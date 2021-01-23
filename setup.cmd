@@ -11,15 +11,15 @@ if "%ZH_HOME%" == "" (
 cd %SCRIPTDIR%
 git pull
 
-set EXEID=launcher
-set SOURCE=%SCRIPTDIR%launcher\bin\Release\%EXEID%.exe
-set TARGET=%ZH_HOME%%EXEID%.exe
+set FILE=launcher.exe
+set SOURCE=%SCRIPTDIR%launcher\bin\Release\%FILE%
+set TARGET=%ZH_HOME%%FILE%
 
 set MSBUILD=C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe
 %MSBUILD% %SCRIPTDIR%ziphttpdTool.sln -p:Configuration=Release
 
 if exist %TARGET%.old del /Y %TARGET%.old
-if exist %TARGET% ren %TARGET% %TARGET%.old
+if exist %TARGET% ren %TARGET% %FILE%.old
 copy %SOURCE% %TARGET%
 
 exit /B 0
