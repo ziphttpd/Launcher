@@ -19,7 +19,7 @@ set MSBUILD=C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe
 %MSBUILD% %BASE%ziphttpdTool.sln -p:Configuration=Release
 
 if exist %TARGETEXE%.old del /F %TARGETEXE%.old
-if exist %TARGETEXE% ren %TARGETEXE% %EXEID%.old
+if exist %TARGETEXE% ren %TARGETEXE% %TARGETEXE%.old
 copy %BUILDEXE% %TARGETEXE%
 
 exit /B 0
