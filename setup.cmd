@@ -18,7 +18,7 @@ set TARGET=%ZH_HOME%%FILE%
 set MSBUILD=C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe
 %MSBUILD% %SCRIPTDIR%ziphttpdTool.sln -p:Configuration=Release
 
-if exist %TARGET%.old del /Y %TARGET%.old
+if exist %TARGET%.old del /F %TARGET%.old
 if exist %TARGET% ren %TARGET% %FILE%.old
 copy %SOURCE% %TARGET%
 
